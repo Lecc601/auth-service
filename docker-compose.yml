@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:15
+    container_name: postgres_auth
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - microservices-network
+
+  app:
+    build: .
+    container_name: servicio_de_authentication_y_authorization
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/auth
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+    ports:
+      - "8081:8081"
+    restart: always
+    entrypoint: ["sh", "-c", "sleep 20 && java -jar app.jar"]
+    networks:
+      - microservices-network
+
+volumes:
+  postgres_data:
+
+networks:
+  microservices-network:
+    name: microservices-network
+    driver: bridge
